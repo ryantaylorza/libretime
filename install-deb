@@ -35,12 +35,12 @@ banner() {
   printf "${cyan}"
   cat << EOF
 
-  ██╗     ██╗██████╗ ██████╗ ███████╗████████╗██╗███╗   ███╗███████╗
-  ██║     ██║██╔══██╗██╔══██╗██╔════╝╚══██╔══╝██║████╗ ████║██╔════╝
-  ██║     ██║██████╔╝██████╔╝█████╗     ██║   ██║██╔████╔██║█████╗
-  ██║     ██║██╔══██╗██╔══██╗██╔══╝     ██║   ██║██║╚██╔╝██║██╔══╝
-  ███████╗██║██████╔╝██║  ██║███████╗   ██║   ██║██║ ╚═╝ ██║███████╗
-  ╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝
+  ██╗      ██╗██████╗ ██████╗ ███████╗████████╗██╗███╗    ███╗███████╗
+  ██║      ██║██╔══██╗██╔══██╗██╔════╝╚══██╔══╝██║████╗  ████║██╔════╝
+  ██║      ██║██████╔╝██████╔╝█████╗      ██║   ██║██╔████╔██║█████╗
+  ██║      ██║██╔══██╗██╔══██╗██╔══╝      ██║   ██║██║╚██╔╝██║██╔══╝
+  ███████╗██║██████╔╝██║  ██║███████╗      ██║   ██║██║ ╚═╝ ██║███████╗
+  ╚══════╝╚═╝╚═════╝  ╚═╝  ╚═╝╚══════╝      ╚═╝   ╚═╝╚═╝      ╚═╝╚══════╝
 
 EOF
   printf "${reset}"
@@ -64,15 +64,15 @@ Usage: $0 [option]... [public_url]
 
 Options:
 
-  --user USER, -u USER          User used to run LibreTime.
+  --user USER, -u USER        User used to run LibreTime.
   --listen-port PORT, -p PORT   Listen port for LibreTime.
   --storage-path PATH, -s PATH  Storage path for LibreTime.
 
-  --in-place, -i                Install LibreTime in place.
+  --in-place, -i            Install LibreTime in place.
 
-  --no-setup-icecast            Do not setup Icecast.
-  --no-setup-postgresql         Do not setup Postgresql.
-  --no-setup-rabbitmq           Do not setup RabbitMQ.
+  --no-setup-icecast        Do not setup Icecast.
+  --no-setup-postgresql     Do not setup Postgresql.
+  --no-setup-rabbitmq         Do not setup RabbitMQ.
 
 Environment variables:
 
@@ -270,6 +270,7 @@ get_config() {
     awk -F ': ' '{ print $2 }'
 }
 
+
 # set_config <value> <key...>
 set_config() {
   value="${1}" && shift
@@ -353,7 +354,8 @@ check_distribution()  {
   # shellcheck disable=SC2034
   case "$ID-$VERSION_ID" in
     ubuntu-20.04) is_ubuntu=true && distro="focal" ;;
-    debian-11)    is_debian=true && distro="bullseye" ;;
+    debian-11)     is_debian=true && distro="bullseye" ;;
+    debian-12)     is_debian=true && distro="bookworm" ;;  # Modified line
     *)
       error "could not determine supported distribution '$ID-$VERSION_ID'
 
@@ -366,7 +368,6 @@ Support for installing LibreTime on Stretch has dropped since 3.0.0-alpha.10.
 Support for installing LibreTime on Jessie has dropped since 3.0.0-alpha.8."
       ;;
   esac
-}
 
 # list_packages <packages_file>
 list_packages() {
@@ -387,12 +388,13 @@ prepare_packages_install() {
     DEBIAN_FRONTEND=noninteractive apt-get -q update
   fi
 
-  if $is_ubuntu; then
-    install_packages software-properties-common
-    add-apt-repository -y ppa:libretime/libretime
-
-    DEBIAN_FRONTEND=noninteractive apt-get -q update
-  fi
+  # Removed Ubuntu PPA related lines:
+  # if $is_ubuntu; then
+  #   install_packages software-properties-common
+  #   add-apt-repository -y ppa:libretime/libretime
+  #
+  #   DEBIAN_FRONTEND=noninteractive apt-get -q update
+  # fi
 }
 
 # install_packages <packages...>
@@ -422,6 +424,7 @@ load_config_defaults() {
     LIBRETIME_TIMEZONE="$(get_system_timezone)"
   fi
 }
+
 
 # Prepare
 ########################################################################################
@@ -760,6 +763,7 @@ template_file cp_if_different \
     -e "s|@@LOG_DIR@@|${LOG_DIR}|g" \
     -e "s|@@USER@@|${LIBRETIME_USER}|g"
 
+
 # Install Nginx
 ########################################################################################
 
@@ -806,6 +810,7 @@ systemctl daemon-reload
 
 service_restart_if_active "php$PHP_VERSION-fpm"
 service_restart_if_active "nginx"
+
 
 # Instructions
 ########################################################################################
